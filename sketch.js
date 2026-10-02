@@ -16,20 +16,23 @@ function setup() {
 function draw() {
   background(255);
 
-  const numPoints = 256;
-  let points = [];
+  const numPoints = 64;
+  let centerPoints = [];
   for (let i = 0; i < numPoints; i++) {
     const t = i / (numPoints - 1);
     const p = getBezierPoint(controlPoints, t);
-    points.push(p);
+    centerPoints.push(p);
   }
 
   let topPoints = new Array(numPoints);
   let bottomPoints = new Array(numPoints);
 
   for (let i = 0; i < numPoints - 1; i++) {
-    const currPoint = createVector(points[i].x, points[i].y);
-    const nextPoint = createVector(points[i + 1].x, points[i + 1].y);
+    const currPoint = createVector(centerPoints[i].x, centerPoints[i].y);
+    const nextPoint = createVector(
+      centerPoints[i + 1].x,
+      centerPoints[i + 1].y,
+    );
 
     const dir = p5.Vector.sub(nextPoint, currPoint);
     const normalDir = createVector(-dir.y, dir.x).normalize();
@@ -53,6 +56,11 @@ function draw() {
   topPoints.forEach((p) => vertex(p.x, p.y));
   bottomPoints.forEach((p) => vertex(p.x, p.y));
   endShape(CLOSE);
+
+  stroke("red");
+  strokeWeight(4);
+  noFill();
+  centerPoints.forEach((p) => point(p.x, p.y));
 }
 
 function getBezierPoint(controlPoints, sampleVal) {
