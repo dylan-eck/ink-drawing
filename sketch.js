@@ -27,18 +27,21 @@ function draw() {
   let topPoints = new Array(numPoints);
   let bottomPoints = new Array(numPoints);
 
-  for (let i = 0; i < numPoints - 1; i++) {
+  for (let i = 0; i < numPoints; i++) {
     const currPoint = createVector(centerPoints[i].x, centerPoints[i].y);
-    const nextPoint = createVector(
-      centerPoints[i + 1].x,
-      centerPoints[i + 1].y,
-    );
+
+    let nextPoint;
+    if (i === numPoints - 1) {
+      nextPoint = createVector(centerPoints[i - 1].x, centerPoints[i - 1].y);
+    } else {
+      nextPoint = createVector(centerPoints[i + 1].x, centerPoints[i + 1].y);
+    }
 
     const dir = p5.Vector.sub(nextPoint, currPoint);
     const normalDir = createVector(-dir.y, dir.x).normalize();
 
-    // const velocity = dir.mag() * (numPoints - 1);
-    const velocity = 40.0 * sin((PI * i) / (numPoints - 1));
+    const velocity =
+      sin((PI * i) / (numPoints - 1)) * 0.1 * dir.mag() * (numPoints - 1);
 
     // const thickness = 20 * noise((NOISE_FREQ * i) / (numPoints - 1));
     const thickness = velocity;
