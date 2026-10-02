@@ -9,7 +9,7 @@ const controlPoints = [
 
 function setup() {
   createCanvas(800, 800);
-  noiseSeed(0);
+  // noiseSeed(0);
   noLoop();
 }
 
@@ -21,6 +21,7 @@ function draw() {
     controlPoints,
     (x) => sin(PI * x),
     false,
+    30,
     256,
   );
 
@@ -29,11 +30,6 @@ function draw() {
   beginShape();
   shapePointsA.forEach((p) => vertex(p.x, p.y));
   endShape(CLOSE);
-
-  // stroke("red");
-  // strokeWeight(4);
-  // noFill();
-  // centerPointsA.forEach((p) => point(p.x, p.y));
 }
 
 function getBezierPoint(controlPoints, sampleVal) {
@@ -61,7 +57,13 @@ function getBezierPoint(controlPoints, sampleVal) {
   return curvePoint;
 }
 
-function inkPath(controlPoints, velocityFunc, useCurveVel, resolution) {
+function inkPath(
+  controlPoints,
+  velocityFunc,
+  useCurveVel,
+  baseThickness,
+  resolution,
+) {
   let centerPoints = new Array(resolution);
   for (let i = 0; i < resolution; i++) {
     const t = i / (resolution - 1);
@@ -107,7 +109,7 @@ function inkPath(controlPoints, velocityFunc, useCurveVel, resolution) {
 
     let noiseValue = noise((NOISE_FREQ * i) / (resolution - 1));
     // map noise value to 0 -> 1 range
-    let mappedNoise = constrain(map(noiseValue, 0.2, 0.7, 0, 1), 0, 1);
+    let mappedNoise = constrain(map(noiseValue, 0.2, 0.7, 0.2, 1), 0, 1);
 
     let lengthVelocity = velocityFunc(i / (resolution - 1));
     let totalVelocity = mappedNoise * lengthVelocity;
@@ -118,7 +120,7 @@ function inkPath(controlPoints, velocityFunc, useCurveVel, resolution) {
       totalVelocity *= curvatureVelocity;
     }
 
-    const thickness = 30 * totalVelocity;
+    const thickness = baseThickness * totalVelocity + 10;
 
     topPoints[i] = {
       x: currPoint.x + (normalDir.x * thickness) / 2,
