@@ -16,7 +16,16 @@ function setup() {
 function draw() {
   background(255);
 
-  const { centerPoints, shapePoints } = inkPath(
+  // path length velocity only
+  const { centerPoints: centerPointsA, shapePoints: shapePointsA } = inkPath(
+    controlPoints,
+    (x) => sin(PI * x),
+    false,
+    256,
+  );
+
+  // path length + curvature velocity
+  const { centerPoints: centerPointsB, shapePoints: shapePointsB } = inkPath(
     controlPoints,
     (x) => sin(PI * x),
     true,
@@ -24,15 +33,22 @@ function draw() {
   );
 
   noStroke();
-  fill(0);
+  fill(255, 0, 0, 50);
   beginShape();
-  shapePoints.forEach((p) => vertex(p.x, p.y));
+  shapePointsA.forEach((p) => vertex(p.x, p.y));
   endShape(CLOSE);
 
-  stroke("red");
-  strokeWeight(4);
+  stroke(0);
+  strokeWeight(2);
   noFill();
-  centerPoints.forEach((p) => point(p.x, p.y));
+  beginShape();
+  shapePointsB.forEach((p) => vertex(p.x, p.y));
+  endShape(CLOSE);
+
+  // stroke("red");
+  // strokeWeight(4);
+  // noFill();
+  // centerPointsA.forEach((p) => point(p.x, p.y));
 }
 
 function getBezierPoint(controlPoints, sampleVal) {
@@ -84,14 +100,18 @@ function inkPath(controlPoints, velocityFunc, useCurveVel, resolution) {
     const dir = p5.Vector.sub(nextPoint, currPoint);
     const normalDir = createVector(-dir.y, dir.x).normalize();
 
-    let velocity = velocityFunc(i / (resolution - 1));
+    let lengthVelocity = velocityFunc(i / (resolution - 1));
+    let curvatureVelocity = 0.2 * dir.mag() * (resolution - 1);
 
+    let totalVelocity = lengthVelocity;
     if (useCurveVel) {
-      velocity *= 0.1 * dir.mag() * (resolution - 1);
+      totalVelocity *= curvatureVelocity;
+    } else {
+      totalVelocity *= 100;
     }
 
     // const thickness = 20 * noise((NOISE_FREQ * i) / (numPoints - 1));
-    const thickness = velocity;
+    const thickness = totalVelocity;
 
     topPoints[i] = {
       x: currPoint.x + (normalDir.x * thickness) / 2,
