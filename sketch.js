@@ -105,16 +105,20 @@ function inkPath(controlPoints, velocityFunc, useCurveVel, resolution) {
     const dir = p5.Vector.sub(nextPoint, currPoint);
     const normalDir = createVector(-dir.y, dir.x).normalize();
 
+    let noiseValue = noise((NOISE_FREQ * i) / (resolution - 1));
+    // map noise value to 0 -> 1 range
+    let mappedNoise = constrain(map(noiseValue, 0.2, 0.7, 0, 1), 0, 1);
+
     let lengthVelocity = velocityFunc(i / (resolution - 1));
+    let totalVelocity = mappedNoise * lengthVelocity;
+
     let curvatureVelocity = normCurvatureVelocities[i];
 
-    let totalVelocity = lengthVelocity;
     if (useCurveVel) {
       totalVelocity *= curvatureVelocity;
     }
 
-    // const thickness = 20 * noise((NOISE_FREQ * i) / (numPoints - 1));
-    const thickness = 20 * totalVelocity;
+    const thickness = 30 * totalVelocity;
 
     topPoints[i] = {
       x: currPoint.x + (normalDir.x * thickness) / 2,
