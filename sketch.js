@@ -16,52 +16,17 @@ function setup() {
 function draw() {
   background(255);
 
-  const numPoints = 256;
-  let centerPoints = [];
-  for (let i = 0; i < numPoints; i++) {
-    const t = i / (numPoints - 1);
-    const p = getBezierPoint(controlPoints, t);
-    centerPoints.push(p);
-  }
-
-  let topPoints = new Array(numPoints);
-  let bottomPoints = new Array(numPoints);
-
-  for (let i = 0; i < numPoints; i++) {
-    const currPoint = createVector(centerPoints[i].x, centerPoints[i].y);
-
-    let nextPoint;
-    if (i === numPoints - 1) {
-      nextPoint = createVector(centerPoints[i - 1].x, centerPoints[i - 1].y);
-    } else {
-      nextPoint = createVector(centerPoints[i + 1].x, centerPoints[i + 1].y);
-    }
-
-    const dir = p5.Vector.sub(nextPoint, currPoint);
-    const normalDir = createVector(-dir.y, dir.x).normalize();
-
-    const velocity =
-      sin((PI * i) / (numPoints - 1)) * 0.1 * dir.mag() * (numPoints - 1);
-
-    // const thickness = 20 * noise((NOISE_FREQ * i) / (numPoints - 1));
-    const thickness = velocity;
-
-    topPoints[i] = {
-      x: currPoint.x + (normalDir.x * thickness) / 2,
-      y: currPoint.y + (normalDir.y * thickness) / 2,
-    };
-
-    bottomPoints[numPoints - 1 - i] = {
-      x: currPoint.x - (normalDir.x * thickness) / 2,
-      y: currPoint.y - (normalDir.y * thickness) / 2,
-    };
-  }
+  const { centerPoints, shapePoints } = inkPath(
+    controlPoints,
+    (x) => sin(PI * x),
+    true,
+    256,
+  );
 
   noStroke();
   fill(0);
   beginShape();
-  topPoints.forEach((p) => vertex(p.x, p.y));
-  bottomPoints.forEach((p) => vertex(p.x, p.y));
+  shapePoints.forEach((p) => vertex(p.x, p.y));
   endShape(CLOSE);
 
   stroke("red");
@@ -93,4 +58,54 @@ function getBezierPoint(controlPoints, sampleVal) {
   };
 
   return curvePoint;
+}
+
+function inkPath(controlPoints, velocityFunc, useCurveVel, resolution) {
+  let centerPoints = new Array(resolution);
+  for (let i = 0; i < resolution; i++) {
+    const t = i / (resolution - 1);
+    const p = getBezierPoint(controlPoints, t);
+    centerPoints[i] = p;
+  }
+
+  let topPoints = new Array(resolution);
+  let bottomPoints = new Array(resolution);
+
+  for (let i = 0; i < resolution; i++) {
+    const currPoint = createVector(centerPoints[i].x, centerPoints[i].y);
+
+    let nextPoint;
+    if (i === resolution - 1) {
+      nextPoint = createVector(centerPoints[i - 1].x, centerPoints[i - 1].y);
+    } else {
+      nextPoint = createVector(centerPoints[i + 1].x, centerPoints[i + 1].y);
+    }
+
+    const dir = p5.Vector.sub(nextPoint, currPoint);
+    const normalDir = createVector(-dir.y, dir.x).normalize();
+
+    let velocity = velocityFunc(i / (resolution - 1));
+
+    if (useCurveVel) {
+      velocity *= 0.1 * dir.mag() * (resolution - 1);
+    }
+
+    // const thickness = 20 * noise((NOISE_FREQ * i) / (numPoints - 1));
+    const thickness = velocity;
+
+    topPoints[i] = {
+      x: currPoint.x + (normalDir.x * thickness) / 2,
+      y: currPoint.y + (normalDir.y * thickness) / 2,
+    };
+
+    bottomPoints[resolution - 1 - i] = {
+      x: currPoint.x - (normalDir.x * thickness) / 2,
+      y: currPoint.y - (normalDir.y * thickness) / 2,
+    };
+  }
+
+  return {
+    centerPoints,
+    shapePoints: [...topPoints, ...bottomPoints],
+  };
 }
