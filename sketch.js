@@ -16,7 +16,7 @@ function setup() {
 function draw() {
   background(255);
 
-  const numPoints = 64;
+  const numPoints = 256;
   let centerPoints = [];
   for (let i = 0; i < numPoints; i++) {
     const t = i / (numPoints - 1);
@@ -37,7 +37,10 @@ function draw() {
     const dir = p5.Vector.sub(nextPoint, currPoint);
     const normalDir = createVector(-dir.y, dir.x).normalize();
 
-    const thickness = 20 * noise((NOISE_FREQ * i) / (numPoints - 1));
+    const velocity = dir.mag() * (numPoints - 1);
+
+    // const thickness = 20 * noise((NOISE_FREQ * i) / (numPoints - 1));
+    const thickness = 0.05 * velocity;
 
     topPoints[i] = {
       x: currPoint.x + (normalDir.x * thickness) / 2,
