@@ -1,19 +1,22 @@
+const NOISE_FREQ = 10;
+
 const controlPoints = [
-  { x: 10, y: 390 },
-  { x: 40, y: 150 },
-  { x: 200, y: 200 },
-  { x: 390, y: 10 },
+  { x: 2 * 10, y: 2 * 390 },
+  { x: 2 * 40, y: 2 * 150 },
+  { x: 2 * 200, y: 2 * 200 },
+  { x: 2 * 390, y: 2 * 10 },
 ];
 
 function setup() {
-  createCanvas(400, 400);
+  createCanvas(800, 800);
+  noiseSeed(0);
   noLoop();
 }
 
 function draw() {
   background(255);
 
-  const numPoints = 32;
+  const numPoints = 256;
   let points = [];
   for (let i = 0; i < numPoints; i++) {
     const t = i / (numPoints - 1);
@@ -31,7 +34,7 @@ function draw() {
     const dir = p5.Vector.sub(nextPoint, currPoint);
     const normalDir = createVector(-dir.y, dir.x).normalize();
 
-    const thickness = 40;
+    const thickness = 20 * noise((NOISE_FREQ * i) / (numPoints - 1));
 
     topPoints[i] = {
       x: currPoint.x + (normalDir.x * thickness) / 2,
