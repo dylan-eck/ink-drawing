@@ -37,10 +37,11 @@ function draw() {
     const dir = p5.Vector.sub(nextPoint, currPoint);
     const normalDir = createVector(-dir.y, dir.x).normalize();
 
-    const velocity = dir.mag() * (numPoints - 1);
+    // const velocity = dir.mag() * (numPoints - 1);
+    const velocity = 40.0 * sin((PI * i) / (numPoints - 1));
 
     // const thickness = 20 * noise((NOISE_FREQ * i) / (numPoints - 1));
-    const thickness = 0.05 * velocity;
+    const thickness = velocity;
 
     topPoints[i] = {
       x: currPoint.x + (normalDir.x * thickness) / 2,
