@@ -24,25 +24,10 @@ function draw() {
     256,
   );
 
-  // path length + curvature velocity
-  const { centerPoints: centerPointsB, shapePoints: shapePointsB } = inkPath(
-    controlPoints,
-    (x) => sin(PI * x),
-    true,
-    256,
-  );
-
   noStroke();
-  fill(255, 0, 0, 50);
+  fill(0);
   beginShape();
   shapePointsA.forEach((p) => vertex(p.x, p.y));
-  endShape(CLOSE);
-
-  stroke(0);
-  strokeWeight(2);
-  noFill();
-  beginShape();
-  shapePointsB.forEach((p) => vertex(p.x, p.y));
   endShape(CLOSE);
 
   // stroke("red");
@@ -84,6 +69,26 @@ function inkPath(controlPoints, velocityFunc, useCurveVel, resolution) {
     centerPoints[i] = p;
   }
 
+  let curvatureVelocities = new Array(resolution);
+  for (let i = 0; i < resolution; i++) {
+    const currPoint = createVector(centerPoints[i].x, centerPoints[i].y);
+
+    let nextPoint;
+    if (i === resolution - 1) {
+      nextPoint = createVector(centerPoints[i - 1].x, centerPoints[i - 1].y);
+    } else {
+      nextPoint = createVector(centerPoints[i + 1].x, centerPoints[i + 1].y);
+    }
+
+    const dir = p5.Vector.sub(nextPoint, currPoint);
+    curvatureVelocities[i] = dir.mag() * (resolution - 1);
+  }
+
+  let maxCurvatureVelocity = max(...curvatureVelocities);
+  let normCurvatureVelocities = curvatureVelocities.map(
+    (v) => v / maxCurvatureVelocity,
+  );
+
   let topPoints = new Array(resolution);
   let bottomPoints = new Array(resolution);
 
@@ -101,17 +106,15 @@ function inkPath(controlPoints, velocityFunc, useCurveVel, resolution) {
     const normalDir = createVector(-dir.y, dir.x).normalize();
 
     let lengthVelocity = velocityFunc(i / (resolution - 1));
-    let curvatureVelocity = 0.2 * dir.mag() * (resolution - 1);
+    let curvatureVelocity = normCurvatureVelocities[i];
 
     let totalVelocity = lengthVelocity;
     if (useCurveVel) {
       totalVelocity *= curvatureVelocity;
-    } else {
-      totalVelocity *= 100;
     }
 
     // const thickness = 20 * noise((NOISE_FREQ * i) / (numPoints - 1));
-    const thickness = totalVelocity;
+    const thickness = 20 * totalVelocity;
 
     topPoints[i] = {
       x: currPoint.x + (normalDir.x * thickness) / 2,
